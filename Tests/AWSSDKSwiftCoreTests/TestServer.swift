@@ -84,16 +84,22 @@ class AWSTestServer {
     }
     
     /// run server reading request, convert from to an input shape processing them and converting the result back to a response. Return an error after so many requests
-    func ProcessWithErrors<Input: AWSShape, Output: AWSShape>(_ process: (Input) throws -> Result<Output>, error: ErrorType, errorAfter: Int) throws {
-        var count = errorAfter
+    func processWithErrors<Input: AWSShape, Output: AWSShape>(_ process: (Input) throws -> Result<Output>, errors: (Int) -> Result<ErrorType?>) throws {
+        var count = 0
+        var continueProcessing = true
         repeat {
-            if count == 0 {
+            let errorResult = errors(count)
+            if let error = errorResult.output {
                 _ = try readRequest()
                 try writeError(error)
-                return
+                continueProcessing = errorResult.continueProcessing
+            } else if errorResult.continueProcessing == false {
+                continueProcessing = false
+            } else {
+                continueProcessing = try processSingleRequest(process)
             }
-            count -= 1
-        } while(try processSingleRequest(process))
+            count += 1
+        } while(continueProcessing)
     }
 
     /// run server reading requests, processing them and returning responses
@@ -102,16 +108,22 @@ class AWSTestServer {
     }
     
     /// run server reading requests, processing them and returning responses. Return an error after so many requests
-    func ProcessWithErrors(_ process: (Request) throws -> Result<Response>, error: ErrorType, errorAfter: Int) throws {
-        var count = errorAfter
+    func processWithErrors(process: (Request) throws -> Result<Response>, errors: (Int) -> Result<ErrorType?>) throws {
+        var count = 0
+        var continueProcessing = true
         repeat {
-            if count == 0 {
+            let errorResult = errors(count)
+            if let error = errorResult.output {
                 _ = try readRequest()
                 try writeError(error)
-                return
+                continueProcessing = errorResult.continueProcessing
+            } else if errorResult.continueProcessing == false {
+                continueProcessing = false
+            } else {
+                continueProcessing = try processSingleRequest(process)
             }
-            count -= 1
-        } while(try processSingleRequest(process))
+            count += 1
+        } while(continueProcessing)
     }
     
 
@@ -145,6 +157,15 @@ extension AWSTestServer {
         
         var json: String { return "{\"__type\":\"\(errorCode)\", \"message\": \"\(message)\"}"}
         var xml: String { return "<Error><Code>\(errorCode)</Code><Message>\(message)</Message></Error>"}
+        
+        static let badRequest = ErrorType(status: 400, errorCode: "BadRequest", message: "AWSTestServer_ErrorType_BadRequest")
+        static let accessDenied = ErrorType(status: 401, errorCode: "AccessDenied", message: "AWSTestServer_ErrorType_AccessDenied")
+        static let notFound = ErrorType(status: 404, errorCode: "NotFound", message: "AWSTestServer_ErrorType_NotFound")
+        static let tooManyRequests = ErrorType(status: 429, errorCode: "TooManyRequests", message: "AWSTestServer_ErrorType_TooManyRequests")
+
+        static let `internal` = ErrorType(status: 500, errorCode: "InternalError", message: "AWSTestServer_ErrorType_InternalError")
+        static let notImplemented = ErrorType(status: 501, errorCode: "NotImplemented", message: "AWSTestServer_ErrorType_NotImplemented")
+        static let serviceUnavailable = ErrorType(status: 503, errorCode: "ServiceUnavailable", message: "AWSTestServer_ErrorType_ServiceUnavailable")
     }
 }
 
