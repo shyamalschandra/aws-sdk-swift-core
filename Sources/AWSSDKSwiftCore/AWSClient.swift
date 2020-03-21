@@ -381,10 +381,12 @@ extension AWSClient {
             if let payload = Input.payloadPath {
                 if let payloadBody = mirror.getAttribute(forKey: payload) {
                     switch payloadBody {
+                    case let awsPayload as AWSPayload:
+                        body = Body(awsPayload)
                     case let shape as AWSShape:
                         body = .json(try shape.encodeAsJSON())
                     default:
-                        body = Body(anyValue: payloadBody)
+                        preconditionFailure("Cannot add this as a payload")
                     }
                 } else {
                     body = .empty
@@ -415,6 +417,8 @@ extension AWSClient {
             if let payload = Input.payloadPath {
                 if let payloadBody = mirror.getAttribute(forKey: payload) {
                     switch payloadBody {
+                    case let awsPayload as AWSPayload:
+                        body = Body(awsPayload)
                     case let shape as AWSShape:
                         var rootName: String? = nil
                         // extract custom payload name
@@ -423,7 +427,7 @@ extension AWSClient {
                         }
                         body = .xml(try shape.encodeAsXML(rootName: rootName))
                     default:
-                        body = Body(anyValue: payloadBody)
+                        preconditionFailure("Cannot add this as a payload")
                     }
                 } else {
                     body = .empty
