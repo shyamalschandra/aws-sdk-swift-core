@@ -523,7 +523,7 @@ class AWSClientTests: XCTestCase {
             public static var _encoding = [
                 AWSMemberEncoding(label: "body", encoding: .blob)
             ]
-            let body : Data
+            let body : AWSPayload
         }
         let response = AWSHTTPResponseImpl(
             status: .ok,
@@ -532,7 +532,7 @@ class AWSClientTests: XCTestCase {
         )
         do {
             let output : Output = try s3Client.validate(operation: "Output", response: response)
-            XCTAssertEqual(output.body, "{\"name\":\"hello\"}".data(using: .utf8))
+            XCTAssertEqual(output.body.asData(), "{\"name\":\"hello\"}".data(using: .utf8))
         } catch {
             XCTFail(error.localizedDescription)
         }
@@ -619,7 +619,7 @@ class AWSClientTests: XCTestCase {
             public static var _encoding = [
                 AWSMemberEncoding(label: "body", encoding: .blob)
             ]
-            let body : Data
+            let body : AWSPayload
         }
         let response = AWSHTTPResponseImpl(
             status: .ok,
@@ -628,7 +628,7 @@ class AWSClientTests: XCTestCase {
         )
         do {
             let output : Output = try kinesisClient.validate(operation: "Output", response: response)
-            XCTAssertEqual(output.body, "{\"name\":\"hello\"}".data(using: .utf8))
+            XCTAssertEqual(output.body.asData(), "{\"name\":\"hello\"}".data(using: .utf8))
         } catch {
             XCTFail(error.localizedDescription)
         }
@@ -706,11 +706,11 @@ class AWSClientTests: XCTestCase {
 
     func testPayloadDataInResponse() {
         struct Response: AWSShape {
-            public static let payloadPath: String? = "data"
+            public static let payloadPath: String? = "payload"
             public static var _encoding = [
-                AWSMemberEncoding(label: "data", encoding: .blob),
+                AWSMemberEncoding(label: "payload", encoding: .blob),
             ]
-            let data: Data
+            let payload: AWSPayload
         }
         var buffer = ByteBufferAllocator().buffer(capacity: 0)
         buffer.writeString("TestString")
@@ -722,7 +722,7 @@ class AWSClientTests: XCTestCase {
         )
         do {
             let output : Response = try kinesisClient.validate(operation: "Output", response: response)
-            XCTAssertEqual(String(data: output.data, encoding: .utf8), "TestString")
+            XCTAssertEqual(output.payload.asString(), "TestString")
         } catch {
             XCTFail(error.localizedDescription)
         }
