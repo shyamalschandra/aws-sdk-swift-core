@@ -3,7 +3,6 @@ import XCTest
 @testable import AWSSignerTests
 
 XCTMain([
-    testCase(AsyncHTTPClientTests.allTests),
     testCase(AWSClientTests.allTests),
     testCase(CredentialTests.allTests),
     testCase(DictionaryEncoderTests.allTests),
