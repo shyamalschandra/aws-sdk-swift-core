@@ -670,6 +670,7 @@ class AWSClientTests: XCTestCase {
         let response = HTTPClient.Response(
             host: "localhost",
             status: .ok,
+            version: .init(major: 1, minor: 1),
             headers: ["Content-Type":"application/hal+json"],
             body: buffer
         )
@@ -717,6 +718,7 @@ class AWSClientTests: XCTestCase {
         let response = HTTPClient.Response(
             host: "localhost",
             status: .ok,
+            version: .init(major: 1, minor: 1),
             headers: ["Content-Type":"application/hal+json"],
             body: buffer
         )
