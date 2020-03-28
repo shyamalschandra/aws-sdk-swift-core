@@ -170,7 +170,7 @@ extension AWSClient {
 
     /// invoke HTTP request
     fileprivate func invoke(_ httpRequest: AWSHTTPRequest) -> EventLoopFuture<AWSHTTPResponse> {
-        let futureResponse = httpClient.execute(request: httpRequest, timeout: .seconds(5))
+        let futureResponse = httpClient.execute(request: httpRequest, timeout: .seconds(20))
         return futureResponse
     }
 
