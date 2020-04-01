@@ -8,9 +8,9 @@ let package = Package(
         .library(name: "AWSSDKSwiftCore", targets: ["AWSSDKSwiftCore"])
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-nio.git", .upToNextMajor(from:"2.13.1")),
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.15.0"),
         .package(url: "https://github.com/apple/swift-nio-ssl.git", .upToNextMajor(from:"2.4.1")),
-        .package(url: "https://github.com/adam-fowler/swift-nio-transport-services.git", .branch("master")),
+        .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.5.1"),
         .package(url: "https://github.com/adam-fowler/async-http-client.git", .branch("niots"))
     ],
     targets: [
