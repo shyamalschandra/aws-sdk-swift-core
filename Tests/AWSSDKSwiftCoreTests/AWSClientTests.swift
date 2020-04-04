@@ -10,6 +10,7 @@ import XCTest
 import AsyncHTTPClient
 import NIO
 import NIOHTTP1
+import NIOTransportServices
 @testable import AWSSDKSwiftCore
 
 class AWSClientTests: XCTestCase {
@@ -118,7 +119,7 @@ class AWSClientTests: XCTestCase {
         }
     }
 
-    // this test only really works on Linux as it requires the MetaDataService. On mac it will just pass automatically
+    // this test only really works on Linux as it requires the MetaDataService.
     func testExpiredCredential() {
         let client = AWSClient(
             region: .useast1,
@@ -129,18 +130,22 @@ class AWSClientTests: XCTestCase {
 
         do {
             let credentials = try client.credentialProvider.getCredential().wait()
-            print(credentials)
         } catch NIO.ChannelError.connectTimeout(_) {
             // credentials request should fail. One possible error is a connectTimerout
         } catch is NIOConnectionError {
-                // credentials request should fail. One possible error is a connection error
+            // credentials request should fail. One possible error is a connection error
         } catch MetaDataServiceError.couldNotGetInstanceRoleName {
             // credentials request fails in a slightly different way if it finds the IP
         } catch {
+            #if canImport(Network)
+            guard let posixError = error as? NWPOSIXError else { XCTFail("Unexpected error \(error)"); return }
+            XCTAssertEqual(posixError.errorCode, .EHOSTDOWN)
+            #else
             XCTFail("Unexpected error \(error)")
+            #endif
         }
     }
-
+    
     let sesClient = AWSClient(
         accessKeyId: "foo",
         secretAccessKey: "bar",
